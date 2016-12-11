@@ -7,7 +7,7 @@
     #define JSMN_STRICT_INIT 1
 #else
     #define JSMN_STRICT_INIT 0
-#endif 
+#endif
 
 static int vtokeq(const char *s, jsmntok_t *t, int numtok, va_list ap) {
 	if (numtok > 0) {

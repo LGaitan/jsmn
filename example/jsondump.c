@@ -5,6 +5,12 @@
 #include <errno.h>
 #include "../jsmn.h"
 
+#ifdef JSMN_STRICT
+    #define JSMN_STRICT_INIT 1
+#else
+    #define JSMN_STRICT_INIT 0
+#endif
+
 /* Function realloc_it() is a wrapper function for standart realloc()
  * with one difference - it frees old memory pointer in case of realloc
  * failure. Thus, DO NOT use old data pointer in anyway after call to
@@ -73,7 +79,7 @@ int main() {
 	size_t tokcount = 2;
 
 	/* Prepare parser */
-	jsmn_init(&p);
+	jsmn_init(&p, JSMN_STRICT_INIT);
 
 	/* Allocate some tokens as a start */
 	tok = malloc(sizeof(*tok) * tokcount);
