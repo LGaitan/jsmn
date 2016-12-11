@@ -22,7 +22,7 @@ static jsmntok_t *jsmn_alloc_token(jsmn_parser *parser,
  * Fills token type and boundaries.
  */
 static void jsmn_fill_token(jsmntok_t *token, jsmntype_t type,
-                            int start, int end) {
+							int start, int end) {
 	token->type = type;
 	token->start = start;
 	token->end = end;
@@ -41,10 +41,9 @@ static int jsmn_parse_primitive(jsmn_parser *parser, const char *js,
 
 	for (; parser->pos < len && js[parser->pos] != '\0'; parser->pos++) {
 		switch (js[parser->pos]) {
-#ifndef JSMN_STRICT
 			/* In strict mode primitive must be followed by "," or "}" or "]" */
 			case ':':
-#endif
+				if (parser->strict) break; // ifndef JSMN_STRICT
 			case '\t' : case '\r' : case '\n' : case ' ' :
 			case ','  : case ']'  : case '}' :
 				goto found;
@@ -54,11 +53,13 @@ static int jsmn_parse_primitive(jsmn_parser *parser, const char *js,
 			return JSMN_ERROR_INVAL;
 		}
 	}
-#ifdef JSMN_STRICT
-	/* In strict mode primitive must be followed by a comma/object/array */
-	parser->pos = start;
-	return JSMN_ERROR_PART;
-#endif
+
+	// ifdef JSMN_STRICT
+	if (parser->strict) {
+		/* In strict mode primitive must be followed by a comma/object/array */
+		parser->pos = start;
+		return JSMN_ERROR_PART;
+	}
 
 found:
 	if (tokens == NULL) {
@@ -258,23 +259,20 @@ int jsmn_parse(jsmn_parser *parser, const char *js, size_t len,
 #endif
 				}
 				break;
-#ifdef JSMN_STRICT
+
 			/* In strict mode primitives are: numbers and booleans */
 			case '-': case '0': case '1' : case '2': case '3' : case '4':
 			case '5': case '6': case '7' : case '8': case '9':
-			case 't': case 'f': case 'n' :
+			case 't': case 'f': case 'n' : default:
 				/* And they must not be keys of the object */
-				if (tokens != NULL && parser->toksuper != -1) {
+				if (parser->strict && tokens != NULL && parser->toksuper != -1) {
 					jsmntok_t *t = &tokens[parser->toksuper];
 					if (t->type == JSMN_OBJECT ||
 							(t->type == JSMN_STRING && t->size != 0)) {
 						return JSMN_ERROR_INVAL;
 					}
 				}
-#else
-			/* In non-strict mode every unquoted value is a primitive */
-			default:
-#endif
+
 				r = jsmn_parse_primitive(parser, js, len, tokens, num_tokens);
 				if (r < 0) return r;
 				count++;
@@ -282,11 +280,10 @@ int jsmn_parse(jsmn_parser *parser, const char *js, size_t len,
 					tokens[parser->toksuper].size++;
 				break;
 
-#ifdef JSMN_STRICT
-			/* Unexpected char in strict mode */
-			default:
-				return JSMN_ERROR_INVAL;
-#endif
+				/* Unexpected char in strict mode */
+				if (parser->strict) {
+					return JSMN_ERROR_INVAL;
+				}
 		}
 	}
 
@@ -306,9 +303,10 @@ int jsmn_parse(jsmn_parser *parser, const char *js, size_t len,
  * Creates a new parser based over a given  buffer with an array of tokens
  * available.
  */
-void jsmn_init(jsmn_parser *parser) {
+void jsmn_init(jsmn_parser *parser, int strict) {
 	parser->pos = 0;
 	parser->toknext = 0;
 	parser->toksuper = -1;
+	parser->strict = strict;
 }
 
