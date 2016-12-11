@@ -3,6 +3,12 @@
 
 #include "../jsmn.c"
 
+#ifdef JSMN_STRICT
+    #define JSMN_STRICT_INIT 1
+#else
+    #define JSMN_STRICT_INIT 0
+#endif 
+
 static int vtokeq(const char *s, jsmntok_t *t, int numtok, va_list ap) {
 	if (numtok > 0) {
 		int i, start, end, size;
@@ -75,7 +81,7 @@ static int parse(const char *s, int status, int numtok, ...) {
 	jsmn_parser p;
 	jsmntok_t *t = malloc(numtok * sizeof(jsmntok_t));
 
-	jsmn_init(&p);
+	jsmn_init(&p, JSMN_STRICT_INIT);
 	r = jsmn_parse(&p, s, strlen(s), t, numtok);
 	if (r != status) {
 		printf("status is %d, not %d\n", r, status);
