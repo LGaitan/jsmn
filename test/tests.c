@@ -146,7 +146,11 @@ int test_partial_string(void) {
 	jsmntok_t tok[5];
 	const char *js = "{\"x\": \"va\\\\ue\", \"y\": \"value y\"}";
 
-	jsmn_init(&p);
+#ifdef JSMN_STRICT
+	jsmn_init(&p, 1);
+#else
+	jsmn_init(&p, 0);
+#endif
 	for (i = 1; i <= strlen(js); i++) {
 		r = jsmn_parse(&p, js, i, tok, sizeof(tok)/sizeof(tok[0]));
 		if (i == strlen(js)) {
@@ -172,7 +176,11 @@ int test_partial_array(void) {
 	jsmntok_t tok[10];
 	const char *js = "[ 1, true, [123, \"hello\"]]";
 
-	jsmn_init(&p);
+#ifdef JSMN_STRICT
+	jsmn_init(&p, 1);
+#else
+	jsmn_init(&p, 0);
+#endif
 	for (i = 1; i <= strlen(js); i++) {
 		r = jsmn_parse(&p, js, i, tok, sizeof(tok)/sizeof(tok[0]));
 		if (i == strlen(js)) {
@@ -202,7 +210,11 @@ int test_array_nomem(void) {
 	js = "  [ 1, true, [123, \"hello\"]]";
 
 	for (i = 0; i < 6; i++) {
-		jsmn_init(&p);
+#ifdef JSMN_STRICT
+		jsmn_init(&p, 1);
+#else
+		jsmn_init(&p, 0);
+#endif
 		memset(toksmall, 0, sizeof(toksmall));
 		memset(toklarge, 0, sizeof(toklarge));
 		r = jsmn_parse(&p, js, strlen(js), toksmall, i);
@@ -230,7 +242,11 @@ int test_unquoted_keys(void) {
 	jsmntok_t tok[10];
 	const char *js;
 
-	jsmn_init(&p);
+#ifdef JSMN_STRICT
+	jsmn_init(&p, 1);
+#else
+	jsmn_init(&p, 0);
+#endif
 	js = "key1: \"value\"\nkey2 : 123";
 
 	r = jsmn_parse(&p, js, strlen(js), tok, 10);
@@ -258,7 +274,11 @@ int test_issue_22(void) {
 		"\"imageheight\":64, \"imagewidth\":160, \"margin\":0, \"name\":\"Tiles\", "
 		"\"properties\":{}, \"spacing\":0, \"tileheight\":32, \"tilewidth\":32 }], "
 		"\"tilewidth\":32, \"version\":1, \"width\":10 }";
-	jsmn_init(&p);
+#ifdef JSMN_STRICT
+	jsmn_init(&p, 1);
+#else
+	jsmn_init(&p, 0);
+#endif
 	r = jsmn_parse(&p, js, strlen(js), tokens, 128);
 	check(r >= 0);
 	return 0;
@@ -279,7 +299,11 @@ int test_input_length(void) {
 
 	js = "{\"a\": 0}garbage";
 
-	jsmn_init(&p);
+#ifdef JSMN_STRICT
+	jsmn_init(&p, 1);
+#else
+	jsmn_init(&p, 0);
+#endif
 	r = jsmn_parse(&p, js, 8, tokens, 10);
 	check(r == 3);
 	check(tokeq(js, tokens, 3,
@@ -294,43 +318,83 @@ int test_count(void) {
 	const char *js;
 
 	js = "{}";
-	jsmn_init(&p);
+#ifdef JSMN_STRICT
+	jsmn_init(&p, 1);
+#else
+	jsmn_init(&p, 0);
+#endif
 	check(jsmn_parse(&p, js, strlen(js), NULL, 0) == 1);
 
 	js = "[]";
-	jsmn_init(&p);
+#ifdef JSMN_STRICT
+	jsmn_init(&p, 1);
+#else
+	jsmn_init(&p, 0);
+#endif
 	check(jsmn_parse(&p, js, strlen(js), NULL, 0) == 1);
 
 	js = "[[]]";
-	jsmn_init(&p);
+#ifdef JSMN_STRICT
+	jsmn_init(&p, 1);
+#else
+	jsmn_init(&p, 0);
+#endif
 	check(jsmn_parse(&p, js, strlen(js), NULL, 0) == 2);
 
 	js = "[[], []]";
-	jsmn_init(&p);
+#ifdef JSMN_STRICT
+	jsmn_init(&p, 1);
+#else
+	jsmn_init(&p, 0);
+#endif
 	check(jsmn_parse(&p, js, strlen(js), NULL, 0) == 3);
 
 	js = "[[], []]";
-	jsmn_init(&p);
+#ifdef JSMN_STRICT
+	jsmn_init(&p, 1);
+#else
+	jsmn_init(&p, 0);
+#endif
 	check(jsmn_parse(&p, js, strlen(js), NULL, 0) == 3);
 
 	js = "[[], [[]], [[], []]]";
-	jsmn_init(&p);
+#ifdef JSMN_STRICT
+	jsmn_init(&p, 1);
+#else
+	jsmn_init(&p, 0);
+#endif
 	check(jsmn_parse(&p, js, strlen(js), NULL, 0) == 7);
 
 	js = "[\"a\", [[], []]]";
-	jsmn_init(&p);
+#ifdef JSMN_STRICT
+	jsmn_init(&p, 1);
+#else
+	jsmn_init(&p, 0);
+#endif
 	check(jsmn_parse(&p, js, strlen(js), NULL, 0) == 5);
 
 	js = "[[], \"[], [[]]\", [[]]]";
-	jsmn_init(&p);
+#ifdef JSMN_STRICT
+	jsmn_init(&p, 1);
+#else
+	jsmn_init(&p, 0);
+#endif
 	check(jsmn_parse(&p, js, strlen(js), NULL, 0) == 5);
 
 	js = "[1, 2, 3]";
-	jsmn_init(&p);
+#ifdef JSMN_STRICT
+	jsmn_init(&p, 1);
+#else
+	jsmn_init(&p, 0);
+#endif
 	check(jsmn_parse(&p, js, strlen(js), NULL, 0) == 4);
 
 	js = "[1, 2, [3, \"a\"], null]";
-	jsmn_init(&p);
+#ifdef JSMN_STRICT
+	jsmn_init(&p, 1);
+#else
+	jsmn_init(&p, 0);
+#endif
 	check(jsmn_parse(&p, js, strlen(js), NULL, 0) == 7);
 
 	return 0;
