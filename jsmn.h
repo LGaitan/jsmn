@@ -64,6 +64,11 @@ typedef struct {
 void jsmn_init(jsmn_parser *parser, int strict);
 
 /**
+ * Check if *tok equals to *s
+ */
+int jsmn_eq(const char *json, jsmntok_t *tok, const char *s);
+
+/**
  * Run JSON parser. It parses a JSON data string into and array of tokens, each describing
  * a single JSON object.
  */

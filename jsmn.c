@@ -299,6 +299,14 @@ int jsmn_parse(jsmn_parser *parser, const char *js, size_t len,
 	return count;
 }
 
+int jsmn_eq(const char *json, jsmntok_t *tok, const char *s) {
+	if (tok->type == JSMN_STRING && (int) strlen(s) == tok->end - tok->start &&
+			strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
+		return 0;
+	}
+	return -1;
+}
+
 /**
  * Creates a new parser based over a given  buffer with an array of tokens
  * available.
@@ -309,4 +317,3 @@ void jsmn_init(jsmn_parser *parser, int strict) {
 	parser->toksuper = -1;
 	parser->strict = strict;
 }
-
